@@ -1,0 +1,4 @@
+int8[] ids
+bool[] directions
+int32[] speeds
+---

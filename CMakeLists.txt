@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(dynamixel_control)
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  std_msgs
+  message_generation
+)
+
+add_service_files(
+  FILES
+  GetIDs.srv
+  GetActuatorPosition.srv
+  GetActuatorsPositions.srv
+  SetActuatorPosition.srv
+  SetActuatorsPositions.srv
+  SetActuatorSpeed.srv
+  SetActuatorsSpeeds.srv
+  SetPower.srv
+  SetActualActuatorsPositions.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+catkin_package(
+ CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
+)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ~/libdynamixel/src/dynamixel/
+)
+
+link_directories(~/libdynamixel/build/default/src/dynamixel)
+
+add_executable(dynamixel_control src/dynamixel_control.cpp)
+target_link_libraries(dynamixel_control ${catkin_LIBRARIES} dynamixel)

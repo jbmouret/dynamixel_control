@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="dynamixel_control" type="dynamixel_control" name="dynamixel_control" output="screen">
+    <param name="port_name" value="/dev/ttyUSB0"/>
+    <param name="baudrate" value="4105"/>
+  </node>
+</launch>
+
