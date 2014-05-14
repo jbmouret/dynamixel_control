@@ -15,6 +15,8 @@
 #include "dynamixel_control/SetPower.h"
 #include "dynamixel_control/SetActualActuatorsPositions.h"
 
+#include <linux/types.h>
+
 #define READ_DURATION 0.02
 
 using namespace dynamixel;
@@ -68,9 +70,9 @@ bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
             ROS_ERROR("%s",e.msg().c_str());
             return -1;
         }
-        uint16_t res = status.decode16();
+        int16_t buf = status.decode16();
         // bit n°10 is sign
-        res.load = (res & 0b10000000000 > 0 ? 1 : -1) * res & 0b1111111111;
+        res.load = (buf & 0b10000000000 > 0 ? 1 : -1) * buf & 0b1111111111;
         return true;
     }
     else

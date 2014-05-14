@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   GetIDs.srv
+  GetActuatorLoad.srv
   GetActuatorPosition.srv
   GetActuatorsPositions.srv
   SetActuatorPosition.srv

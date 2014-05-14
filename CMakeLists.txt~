@@ -18,6 +18,7 @@ add_service_files(
   SetActuatorSpeed.srv
   SetActuatorsSpeeds.srv
   SetPower.srv
+  SetActualActuatorsPositions.srv
 )
 
 generate_messages(
