@@ -297,6 +297,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    controller.send(dynamixel::ax12::SetAlarmShutdown());
+    controller.send(dynamixel::ax12::SetAlarmLed());
+
     loadOffsets();
 
     ros::spin();
