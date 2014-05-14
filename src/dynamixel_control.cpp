@@ -5,6 +5,7 @@
 #include "dynamixel.hpp"
 
 #include "dynamixel_control/GetIDs.h"
+#include "dynamixel_control/GetActuatorLoad.h"
 #include "dynamixel_control/GetActuatorPosition.h"
 #include "dynamixel_control/GetActuatorsPositions.h"
 #include "dynamixel_control/SetActuatorPosition.h"
@@ -49,6 +50,33 @@ bool GetIDsService(dynamixel_control::GetIDs::Request  &req,
             dynamixel_control::GetIDs::Response &res)
 {
     res.ids = ax12_ids;
+}
+
+bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
+                         dynamixel_control::GetActuatorLoad::Response &res)
+{
+    if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
+    {
+        dynamixel::Status status;
+        try
+        {
+            controller.send(dynamixel::ax12::GetLoad(req.id));
+            controller.recv(READ_DURATION, status);
+        }
+        catch (Error e)
+        {
+            ROS_ERROR("%s",e.msg().c_str());
+            return -1;
+        }
+        uint16_t res = status.decode16();
+        // bit n°10 is sign
+        res.load = (res & 0b10000000000 > 0 ? 1 : -1) * res & 0b1111111111;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool GetActuatorPositionService(dynamixel_control::GetActuatorPosition::Request  &req,
