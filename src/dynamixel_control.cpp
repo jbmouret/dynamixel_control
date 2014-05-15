@@ -6,6 +6,7 @@
 
 #include "dynamixel_control/GetIDs.h"
 #include "dynamixel_control/GetActuatorLoad.h"
+#include "dynamixel_control/GetActuatorsLoads.h"
 #include "dynamixel_control/GetActuatorPosition.h"
 #include "dynamixel_control/GetActuatorsPositions.h"
 #include "dynamixel_control/SetActuatorPosition.h"
@@ -49,13 +50,13 @@ void loadOffsets()
 }
 
 bool GetIDsService(dynamixel_control::GetIDs::Request  &req,
-            dynamixel_control::GetIDs::Response &res)
+                   dynamixel_control::GetIDs::Response &res)
 {
     res.ids = ax12_ids;
 }
 
 bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
-                         dynamixel_control::GetActuatorLoad::Response &res)
+                            dynamixel_control::GetActuatorLoad::Response &res)
 {
     if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
     {
@@ -81,8 +82,38 @@ bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
     }
 }
 
+bool GetActuatorsLoadsService(dynamixel_control::GetActuatorsLoads::Request  &req,
+                              dynamixel_control::GetActuatorsLoads::Response &res)
+{
+    dynamixel::Status status;
+    for(int i = 0; i < req.ids.size(); i++)
+    {
+        if(std::find(ax12_ids.begin(),ax12_ids.end(),req.ids[i]) != ax12_ids.end())
+        {
+            try
+            {
+                controller.send(dynamixel::ax12::GetLoad(req.ids[i]));
+                controller.recv(READ_DURATION, status);
+            }
+            catch (Error e)
+            {
+                ROS_ERROR("%s",e.msg().c_str());
+                return false;
+            }
+            int16_t buf = status.decode16();
+            // bit n°10 is sign
+            res.loads.push_back((buf & 0b10000000000 > 0 ? 1 : -1) * buf & 0b1111111111);
+        }
+        else
+        {
+            res.loads.push_back(0);
+        }
+    }
+    return true;
+}
+
 bool GetActuatorPositionService(dynamixel_control::GetActuatorPosition::Request  &req,
-                         dynamixel_control::GetActuatorPosition::Response &res)
+                                dynamixel_control::GetActuatorPosition::Response &res)
 {
     if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
     {
@@ -108,7 +139,7 @@ bool GetActuatorPositionService(dynamixel_control::GetActuatorPosition::Request 
 }
 
 bool GetActuatorsPositionsService(dynamixel_control::GetActuatorsPositions::Request  &req,
-                           dynamixel_control::GetActuatorsPositions::Response &res)
+                                  dynamixel_control::GetActuatorsPositions::Response &res)
 {
     dynamixel::Status status;
     std::vector<int> positions;
@@ -132,7 +163,7 @@ bool GetActuatorsPositionsService(dynamixel_control::GetActuatorsPositions::Requ
 }
 
 bool SetActuatorSpeedService(dynamixel_control::SetActuatorSpeed::Request  &req,
-                      dynamixel_control::SetActuatorSpeed::Response &res)
+                             dynamixel_control::SetActuatorSpeed::Response &res)
 {
     if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
     {
@@ -157,7 +188,7 @@ bool SetActuatorSpeedService(dynamixel_control::SetActuatorSpeed::Request  &req,
 }
 
 bool SetActuatorsSpeedsService(dynamixel_control::SetActuatorsSpeeds::Request  &req,
-                        dynamixel_control::SetActuatorsSpeeds::Response &res)
+                               dynamixel_control::SetActuatorsSpeeds::Response &res)
 {
     dynamixel::Status status;
     std::vector<bool> directions;
@@ -178,7 +209,7 @@ bool SetActuatorsSpeedsService(dynamixel_control::SetActuatorsSpeeds::Request  &
 }
 
 bool SetActuatorPositionService(dynamixel_control::SetActuatorPosition::Request  &req,
-                         dynamixel_control::SetActuatorPosition::Response &res)
+                                dynamixel_control::SetActuatorPosition::Response &res)
 {
     if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
     {
@@ -204,7 +235,7 @@ bool SetActuatorPositionService(dynamixel_control::SetActuatorPosition::Request 
 }
 
 bool SetActuatorsPositionsService(dynamixel_control::SetActuatorsPositions::Request  &req,
-                           dynamixel_control::SetActuatorsPositions::Response &res)
+                                  dynamixel_control::SetActuatorsPositions::Response &res)
 {
     dynamixel::Status status;
     try
@@ -235,7 +266,7 @@ bool SetActuatorsPositionsService(dynamixel_control::SetActuatorsPositions::Requ
 }
 
 bool SetPowerService(dynamixel_control::SetPower::Request  &req,
-              dynamixel_control::SetPower::Response &res)
+                     dynamixel_control::SetPower::Response &res)
 {
     dynamixel::Status status;
     try
@@ -255,7 +286,7 @@ bool SetPowerService(dynamixel_control::SetPower::Request  &req,
 }
 
 bool SetActualActuatorsPositionsService(dynamixel_control::SetActualActuatorsPositions::Request  &req,
-                                 dynamixel_control::SetActualActuatorsPositions::Response &res)
+                                        dynamixel_control::SetActualActuatorsPositions::Response &res)
 {
     dynamixel::Status status;
     try
@@ -290,6 +321,8 @@ int main(int argc, char** argv)
 
     ros::ServiceServer getIDsService = nh.advertiseService("getids", GetIDsService);
     ros::ServiceServer getPositionService = nh.advertiseService("getposition", GetActuatorPositionService);
+    ros::ServiceServer getLoadService = nh.advertiseService("getload", GetActuatorLoadService);
+    ros::ServiceServer getLoadsService = nh.advertiseService("getloads", GetActuatorsLoadsService);
     ros::ServiceServer getPositionsService = nh.advertiseService("getpositions", GetActuatorsPositionsService);
     ros::ServiceServer setSpeedService = nh.advertiseService("setspeed", SetActuatorSpeedService);
     ros::ServiceServer setPositionService = nh.advertiseService("setposition", SetActuatorPositionService);

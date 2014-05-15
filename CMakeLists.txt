@@ -12,6 +12,7 @@ add_service_files(
   FILES
   GetIDs.srv
   GetActuatorLoad.srv
+  GetActuatorsLoads.srv
   GetActuatorPosition.srv
   GetActuatorsPositions.srv
   SetActuatorPosition.srv
