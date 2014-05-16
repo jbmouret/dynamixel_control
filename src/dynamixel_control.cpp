@@ -360,8 +360,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    controller.send(dynamixel::ax12::SetAlarmShutdown());
-    controller.send(dynamixel::ax12::SetAlarmLed());
+    controller.send(dynamixel::ax12::SetAlarmShutdown(0b01011111));
+    controller.send(dynamixel::ax12::SetAlarmLed(0b01011111));
 
     loadOffsets();
 
