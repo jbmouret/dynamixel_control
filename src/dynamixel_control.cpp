@@ -5,6 +5,7 @@
 #include "dynamixel.hpp"
 
 #include "dynamixel_control/GetIDs.h"
+#include "dynamixel_control/Hold.h"
 #include "dynamixel_control/GetActuatorVoltage.h"
 #include "dynamixel_control/GetActuatorsVoltages.h"
 #include "dynamixel_control/GetActuatorLoad.h"
@@ -55,6 +56,29 @@ bool GetIDsService(dynamixel_control::GetIDs::Request  &req,
                    dynamixel_control::GetIDs::Response &res)
 {
     res.ids = ax12_ids;
+}
+
+bool HoldService(dynamixel_control::Hold::Request  &req,
+                 dynamixel_control::Hold::Response &res)
+{
+    dynamixel::Status status;
+    for(int i = 0; i < ax12_ids.size(); i++)
+    {
+        try
+        {
+            controller.send(dynamixel::ax12::GetPosition(ax12_ids[i]));
+            controller.recv(READ_DURATION, status);
+            controller.send(dynamixel::ax12::SetPosition(ax12_ids[i], status.decode16()));
+            controller.recv(READ_DURATION, status);
+        }
+        catch (Error e)
+        {
+            ROS_ERROR("%s",e.msg().c_str());
+            return false;
+        }
+
+    }
+    return true;
 }
 
 bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
@@ -116,7 +140,7 @@ bool GetActuatorsLoadsService(dynamixel_control::GetActuatorsLoads::Request  &re
 }
 
 bool GetActuatorVoltageService(dynamixel_control::GetActuatorVoltage::Request  &req,
-                            dynamixel_control::GetActuatorVoltage::Response &res)
+                               dynamixel_control::GetActuatorVoltage::Response &res)
 {
     if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
     {
@@ -141,7 +165,7 @@ bool GetActuatorVoltageService(dynamixel_control::GetActuatorVoltage::Request  &
 }
 
 bool GetActuatorsVoltagesService(dynamixel_control::GetActuatorsVoltages::Request  &req,
-                              dynamixel_control::GetActuatorsVoltages::Response &res)
+                                 dynamixel_control::GetActuatorsVoltages::Response &res)
 {
     dynamixel::Status status;
     for(int i = 0; i < req.ids.size(); i++)
@@ -376,6 +400,7 @@ int main(int argc, char** argv)
     ros::NodeHandle nh("/dynamixel_control");
 
     ros::ServiceServer getIDsService = nh.advertiseService("getids", GetIDsService);
+    ros::ServiceServer holdService = nh.advertiseService("hold", HoldService);
     ros::ServiceServer getPositionService = nh.advertiseService("getposition", GetActuatorPositionService);
     ros::ServiceServer getVoltageService = nh.advertiseService("getvoltage", GetActuatorVoltageService);
     ros::ServiceServer getVoltagesService = nh.advertiseService("getvoltages", GetActuatorsVoltagesService);

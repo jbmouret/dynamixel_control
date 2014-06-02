@@ -13,6 +13,8 @@ add_service_files(
   GetIDs.srv
   GetActuatorLoad.srv
   GetActuatorsLoads.srv
+  GetActuatorVoltage.srv
+  GetActuatorsVoltages.srv
   GetActuatorPosition.srv
   GetActuatorsPositions.srv
   SetActuatorPosition.srv
