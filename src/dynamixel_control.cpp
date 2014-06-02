@@ -5,6 +5,8 @@
 #include "dynamixel.hpp"
 
 #include "dynamixel_control/GetIDs.h"
+#include "dynamixel_control/GetActuatorVoltage.h"
+#include "dynamixel_control/GetActuatorsVoltages.h"
 #include "dynamixel_control/GetActuatorLoad.h"
 #include "dynamixel_control/GetActuatorsLoads.h"
 #include "dynamixel_control/GetActuatorPosition.h"
@@ -73,7 +75,7 @@ bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
         }
         int16_t buf = status.decode16();
         // bit n°10 is sign
-        res.load = (buf & 0b10000000000 > 0 ? 1 : -1) * buf & 0b1111111111;
+        res.load = (buf & 0x3FF)*100/1023.0;
         return true;
     }
     else
@@ -102,11 +104,65 @@ bool GetActuatorsLoadsService(dynamixel_control::GetActuatorsLoads::Request  &re
             }
             int16_t buf = status.decode16();
             // bit n°10 is sign
-            res.loads.push_back((buf & 0b10000000000 > 0 ? 1 : -1) * buf & 0b1111111111);
+            res.loads.push_back((buf & 0x3FF)*100.0/1023.0);
+            //res.loads.push_back(buf);
         }
         else
         {
             res.loads.push_back(0);
+        }
+    }
+    return true;
+}
+
+bool GetActuatorVoltageService(dynamixel_control::GetActuatorVoltage::Request  &req,
+                            dynamixel_control::GetActuatorVoltage::Response &res)
+{
+    if(std::find(ax12_ids.begin(),ax12_ids.end(),req.id) != ax12_ids.end())
+    {
+        dynamixel::Status status;
+        try
+        {
+            controller.send(dynamixel::ax12::GetVoltage(req.id));
+            controller.recv(READ_DURATION, status);
+        }
+        catch (Error e)
+        {
+            ROS_ERROR("%s",e.msg().c_str());
+            return -1;
+        }
+        res.voltage = status.decode16();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool GetActuatorsVoltagesService(dynamixel_control::GetActuatorsVoltages::Request  &req,
+                              dynamixel_control::GetActuatorsVoltages::Response &res)
+{
+    dynamixel::Status status;
+    for(int i = 0; i < req.ids.size(); i++)
+    {
+        if(std::find(ax12_ids.begin(),ax12_ids.end(),req.ids[i]) != ax12_ids.end())
+        {
+            try
+            {
+                controller.send(dynamixel::ax12::GetVoltage(req.ids[i]));
+                controller.recv(READ_DURATION, status);
+            }
+            catch (Error e)
+            {
+                ROS_ERROR("%s",e.msg().c_str());
+                return false;
+            }
+            res.voltages.push_back(status.decode16());
+        }
+        else
+        {
+            res.voltages.push_back(0);
         }
     }
     return true;
@@ -321,6 +377,8 @@ int main(int argc, char** argv)
 
     ros::ServiceServer getIDsService = nh.advertiseService("getids", GetIDsService);
     ros::ServiceServer getPositionService = nh.advertiseService("getposition", GetActuatorPositionService);
+    ros::ServiceServer getVoltageService = nh.advertiseService("getvoltage", GetActuatorVoltageService);
+    ros::ServiceServer getVoltagesService = nh.advertiseService("getvoltages", GetActuatorsVoltagesService);
     ros::ServiceServer getLoadService = nh.advertiseService("getload", GetActuatorLoadService);
     ros::ServiceServer getLoadsService = nh.advertiseService("getloads", GetActuatorsLoadsService);
     ros::ServiceServer getPositionsService = nh.advertiseService("getpositions", GetActuatorsPositionsService);
