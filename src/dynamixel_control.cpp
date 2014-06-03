@@ -98,6 +98,7 @@ bool GetActuatorLoadService(dynamixel_control::GetActuatorLoad::Request  &req,
             return -1;
         }
         int16_t buf = status.decode16();
+        ROS_INFO("Raw load : %d",buf);
         // bit n°10 is sign
         res.load = (buf & 0x3FF)*100/1023.0;
         return true;
