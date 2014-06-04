@@ -156,7 +156,7 @@ bool GetActuatorVoltageService(dynamixel_control::GetActuatorVoltage::Request  &
             ROS_ERROR("%s",e.msg().c_str());
             return -1;
         }
-        res.voltage = status.decode16();
+        res.voltage = (status.decode16()&0xFF)/10.0;
         return true;
     }
     else
@@ -183,7 +183,7 @@ bool GetActuatorsVoltagesService(dynamixel_control::GetActuatorsVoltages::Reques
                 ROS_ERROR("%s",e.msg().c_str());
                 return false;
             }
-            res.voltages.push_back(status.decode16());
+            res.voltages.push_back((status.decode16()&0xFF)/10.0);
         }
         else
         {
