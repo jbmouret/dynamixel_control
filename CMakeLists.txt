@@ -19,11 +19,15 @@ add_service_files(
   GetActuatorPosition.srv
   GetActuatorsPositions.srv
   SetActuatorPosition.srv
-  SetActuatorsPositions.srv
   SetActuatorSpeed.srv
-  SetActuatorsSpeeds.srv
   SetPower.srv
   SetActualActuatorsPositions.srv
+)
+
+add_message_files(
+  FILES
+  PositionCtrl.msg
+  SpeedCtrl.msg
 )
 
 generate_messages(
@@ -37,10 +41,11 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ~/libdynamixel/src/dynamixel/
+  ~/Code/libdynamixel/src/dynamixel/
 )
 
-link_directories(~/libdynamixel/build/default/src/dynamixel)
+link_directories(~/Code/libdynamixel/build/default/src/dynamixel)
 
 add_executable(dynamixel_control src/dynamixel_control.cpp)
 target_link_libraries(dynamixel_control ${catkin_LIBRARIES} dynamixel)
+add_dependencies(dynamixel_control dynamixel_control_gencpp dynamixel_control_generate_messages_cpp)
