@@ -1,0 +1,5 @@
+# Ignore Mac's specific files
+.DS_Store
+
+# Ignore temporary files
+*~

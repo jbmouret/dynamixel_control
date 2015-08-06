@@ -1,3 +1,2 @@
-int8[] ids
+uint8[] ids
 int32[] positions
----
