@@ -280,7 +280,7 @@ int main(int argc, char** argv)
 
 	ros::Subscriber setPositionsSub = nh.subscribe("setpositions", 1, SetActuatorsPositionsCallback);
 	ros::Subscriber setSpeedsSub = nh.subscribe("setspeeds", 1, SetActuatorsSpeedsCallback);
-	ros::Subscriber setWheelSpeedsSub = nh.subscribe("setswheelspeeds", 1, SetWheelSpeedsCallback);
+	ros::Subscriber setWheelSpeedsSub = nh.subscribe("setwheelsspeeds", 1, SetWheelSpeedsCallback);
 
 	// node params :
 	std::string port_name;
