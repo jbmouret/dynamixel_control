@@ -1,2 +1,3 @@
 uint8[] ids
+bool[] directions
 int32[] speeds

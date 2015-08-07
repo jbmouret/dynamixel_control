@@ -28,6 +28,7 @@ add_message_files(
   FILES
   PositionCtrl.msg
   SpeedCtrl.msg
+  SpeedWheelCtrl.msg
 )
 
 generate_messages(

@@ -6,6 +6,7 @@
 
 #include "dynamixel_control/PositionCtrl.h"
 #include "dynamixel_control/SpeedCtrl.h"
+#include "dynamixel_control/SpeedWheelCtrl.h"
 
 #include "dynamixel_control/GetIDs.h"
 #include "dynamixel_control/GetActuatorPosition.h"
@@ -110,7 +111,7 @@ bool SetActuatorSpeedService(dynamixel_control::SetActuatorSpeed::Request  &req,
 		dynamixel::Status status;
 		try
 		{
-			controller.send(dynamixel::ax12::SetSpeed(req.id, req.speed > 0, abs(req.speed)));
+			controller.send(dynamixel::ax12::SetSpeed(req.id, abs(req.speed), req.speed > 0));
 			controller.recv(READ_DURATION, status);
 		}
 		catch (Error e)
@@ -131,13 +132,28 @@ void SetActuatorsSpeedsCallback(const dynamixel_control::SpeedCtrl &msg)
 {
 	dynamixel::Status status;
 
+	try
+	{
+		controller.send(dynamixel::ax12::SetSpeeds(msg.ids, msg.speeds));
+		controller.recv(READ_DURATION, status);
+	}
+	catch (Error e)
+	{
+		ROS_ERROR("%s",e.msg().c_str());
+	}
+}
+
+void SetWheelSpeedsCallback(const dynamixel_control::SpeedWheelCtrl &msg)
+{
+	dynamixel::Status status;
+
 	std::vector<bool> directions;
 	for(int i = 0; i < msg.directions.size(); i++)
 		directions.push_back((bool)msg.directions[i]);
 
 	try
 	{
-		controller.send(dynamixel::ax12::SetSpeeds(msg.ids, directions, msg.speeds));
+		controller.send(dynamixel::ax12::SetSpeeds(msg.ids, msg.speeds, directions));
 		controller.recv(READ_DURATION, status);
 	}
 	catch (Error e)
@@ -264,6 +280,7 @@ int main(int argc, char** argv)
 
 	ros::Subscriber setPositionsSub = nh.subscribe("setpositions", 1, SetActuatorsPositionsCallback);
 	ros::Subscriber setSpeedsSub = nh.subscribe("setspeeds", 1, SetActuatorsSpeedsCallback);
+	ros::Subscriber setWheelSpeedsSub = nh.subscribe("setswheelspeeds", 1, SetWheelSpeedsCallback);
 
 	// node params :
 	std::string port_name;
@@ -314,7 +331,7 @@ int main(int argc, char** argv)
 	}
 	try
 	{
-		controller.send(dynamixel::ax12::SetSpeeds(ax12_ids, directions, speeds));
+		controller.send(dynamixel::ax12::SetSpeeds(ax12_ids, speeds, directions));
 		controller.recv(READ_DURATION, status);
 	}
 	catch (Error e)
