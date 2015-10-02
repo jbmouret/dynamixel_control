@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>dynamixel_control</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <description>The dynamixel_control package</description>
 
   <maintainer email="richer@isir.upmc.fr">Florian Richer</maintainer>
